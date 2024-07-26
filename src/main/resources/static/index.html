@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Rule Engine</title>
+    <script>
+        async function createRule() {
+            const ruleString = document.getElementById("ruleString").value;
+            const response = await fetch('http://localhost:8080/rules/create', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(ruleString),
+            });
+            const data = await response.json();
+            console.log('Created Rule AST:', data);
+        }
+
+        async function combineRules() {
+            const ruleStrings = [
+                "((age > 30 AND department = 'Sales') OR (age < 25 AND department = 'Marketing')) AND (salary > 50000 OR experience > 5)",
+                "((age > 30 AND department = 'Marketing')) AND (salary > 20000 OR experience > 5)"
+            ];
+            const response = await fetch('http://localhost:8080/rules/combine', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(ruleStrings),
+            });
+            const data = await response.json();
+            console.log('Combined Rule AST:', data);
+        }
+
+        async function evaluateRule() {
+            const ast = {/* AST JSON */ };
+            const data = {
+                age: 35,
+                department: 'Sales',
+                salary: 60000,
+                experience: 3,
+            };
+            const response = await fetch('http://localhost:8080/rules/evaluate', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ ast, data }),
+            });
+            const result = await response.json();
+            console.log('Evaluation Result:', result);
+        }
+    </script>
+</head>
+
+<body>
+    <h1>Rule Engine</h1>
+    <div>
+        <input type="text" id="ruleString" placeholder="Enter rule string">
+        <button onclick="createRule()">Create Rule</button>
+    </div>
+    <div>
+        <button onclick="combineRules()">Combine Rules</button>
+    </div>
+    <div>
+        <button onclick="evaluateRule()">Evaluate Rule</button>
+    </div>
+</body>
+
+</html>
