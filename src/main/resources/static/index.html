@@ -3,7 +3,28 @@
 
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Rule Engine</title>
+</head>
+
+<body>
+    <h1>Rule Engine</h1>
+
+    <h2>Create Rule</h2>
+    <input type="text" id="ruleString" placeholder="Enter rule string">
+    <button onclick="createRule()">Create Rule</button>
+    <pre id="ruleOutput"></pre>
+
+    <h2>Combine Rules</h2>
+    <textarea id="rulesList" placeholder="Enter rule strings, one per line" rows="5" cols="50"></textarea>
+    <button onclick="combineRules()">Combine Rules</button>
+    <pre id="combinedRuleOutput"></pre>
+
+    <h2>Evaluate Rule</h2>
+    <textarea id="dataInput" placeholder='Enter data in JSON format' rows="5" cols="50"></textarea>
+    <button onclick="evaluateRule()">Evaluate Rule</button>
+    <pre id="evaluationResult"></pre>
+
     <script>
         async function createRule() {
             const ruleString = document.getElementById("ruleString").value;
@@ -12,61 +33,58 @@
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify(ruleString),
+                body: JSON.stringify({ ruleString }),
             });
+
+            if (!response.ok) {
+                console.error('Error creating rule:', response.statusText);
+                return;
+            }
+
             const data = await response.json();
-            console.log('Created Rule AST:', data);
+            document.getElementById("ruleOutput").textContent = JSON.stringify(data, null, 2);
         }
 
         async function combineRules() {
-            const ruleStrings = [
-                "((age > 30 AND department = 'Sales') OR (age < 25 AND department = 'Marketing')) AND (salary > 50000 OR experience > 5)",
-                "((age > 30 AND department = 'Marketing')) AND (salary > 20000 OR experience > 5)"
-            ];
+            const rulesList = document.getElementById("rulesList").value.split('\n').filter(rule => rule.trim() !== '');
             const response = await fetch('http://localhost:8080/rules/combine', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify(ruleStrings),
+                body: JSON.stringify(rulesList),
             });
+
+            if (!response.ok) {
+                console.error('Error combining rules:', response.statusText);
+                return;
+            }
+
             const data = await response.json();
-            console.log('Combined Rule AST:', data);
+            document.getElementById("combinedRuleOutput").textContent = JSON.stringify(data, null, 2);
         }
 
         async function evaluateRule() {
-            const ast = {/* AST JSON */ };
-            const data = {
-                age: 35,
-                department: 'Sales',
-                salary: 60000,
-                experience: 3,
-            };
+            const rule = JSON.parse(document.getElementById("combinedRuleOutput").textContent || '{}');
+            const data = JSON.parse(document.getElementById("dataInput").value || '{}');
+
             const response = await fetch('http://localhost:8080/rules/evaluate', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ ast, data }),
+                body: JSON.stringify({ rule, data }), // Changed 'ast' to 'rule'
             });
+
+            if (!response.ok) {
+                console.error('Error evaluating rule:', response.statusText);
+                return;
+            }
+
             const result = await response.json();
-            console.log('Evaluation Result:', result);
+            document.getElementById("evaluationResult").textContent = `Evaluation Result: ${result}`;
         }
     </script>
-</head>
-
-<body>
-    <h1>Rule Engine</h1>
-    <div>
-        <input type="text" id="ruleString" placeholder="Enter rule string">
-        <button onclick="createRule()">Create Rule</button>
-    </div>
-    <div>
-        <button onclick="combineRules()">Combine Rules</button>
-    </div>
-    <div>
-        <button onclick="evaluateRule()">Evaluate Rule</button>
-    </div>
 </body>
 
 </html>
