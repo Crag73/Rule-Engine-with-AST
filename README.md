@@ -18,7 +18,8 @@ This application is a simple 3-tier rule engine to determine user eligibility ba
                         ├── model/
                         │   └── Node.java                 # Class to represent the AST nodes.
                         └── service/
-                            └── RuleEngine.java           # Service class containing the logic for creating, combining, and evaluating rules.
+                            └── RuleEngine.java           # Service class containing the logic for creating, combining 
+                                                            and evaluating rules.
         └── resources/
             ├── static/
             │   └── index.html                        # The frontend HTML file for creating rules.
